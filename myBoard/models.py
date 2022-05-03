@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from mptt.models import MPTTModel, TreeForeignKey
+from django.urls import reverse
 
 from gallery.models import Gallery
 
@@ -19,6 +20,10 @@ class Category(MPTTModel):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
 
     class MPTTMeta:
         order_insertion_by = ['name']
@@ -46,8 +51,9 @@ class DateAdvert(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = "Фильтр"
-        verbose_name_plural = "Фильтры"
+        verbose_name = "Срок"
+        verbose_name_plural = "Сроки"
+        ordering = ['id']
 
 
 class Advert(models.Model):
@@ -85,13 +91,18 @@ class Advert(models.Model):
         blank=True,
         null=True
     )
-    price = models.DecimalField("Цена", max_digits=5, decimal_places=2)
+    price = models.DecimalField("Цена", max_digits=100, decimal_places=2)
     slug = models.SlugField("url", max_length=200, unique=True)
     created = models.DateTimeField("Дата создания", auto_now_add=True)
     moderation = models.BooleanField("Модерация", default=False)
 
     def __str__(self):
         return self.subject
+
+    def get_absolute_url(self):
+        return reverse("advert-detail",
+                       kwargs={"category": self.category.slug,
+                               "slug": self.slug})
 
     class Meta:
         verbose_name = "Объявление"
